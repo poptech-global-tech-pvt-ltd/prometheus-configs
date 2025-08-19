@@ -9,17 +9,23 @@ alertmanager:
         webhook_configs:
           - url: 'https://events.zenduty.com/integration/vp8fc/prometheus/80886b84-dc6d-416a-8e88-99217c46d282/'
 serverFiles:
+  # prometheus.yml:
+  #   scrape_configs:
+  #     - job_name: 'all_services'
+  #       kubernetes_sd_configs:
+  #         - role: service
+    
   alerting_rules.yml:
     groups:
       - name: custom-alerts
         rules:
-          - alert: TestingAlertsFromProm
-            expr: up{namespace="pop-prod"} == 0
+          - alert: TestingAlertsFromPrometheus
+            expr: up{namespace="pop-prod"}==0
             for: 10s
             labels:
               severity: critical
             annotations:
-              summary: "This is a test. Please ignore and relax!"
-              description: "This is a test. Please ignore and relax!"
+              summary: "Service {{ $labels.instance }} is down."
+              description: "Service {{ $labels.instance }} has no healthy pods."
 
 

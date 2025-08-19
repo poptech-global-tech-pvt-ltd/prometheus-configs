@@ -1,0 +1,34 @@
+alertmanager:
+  config:
+    global:
+      resolve_timeout: 15m
+    route:
+      receiver: 'zenduty'
+    receivers:
+      - name: 'zenduty'
+        webhook_configs:
+          - url: 'https://events.zenduty.com/integration/vp8fc/prometheus/80886b84-dc6d-416a-8e88-99217c46d282/'
+serverFiles:
+  prometheus.yml:
+    scrape_configs:
+      - job_name: 'kube-state-metrics'
+        static_configs:
+          - targets: ['prometheus-kube-state-metrics.prometheus-pop-prod.svc.cluster.local:8080']
+      # - job_name: 'all_services'
+      #   kubernetes_sd_configs:
+      #     - role: service
+    
+  alerting_rules.yml:
+    groups:
+      - name: Prometheus Alerts
+        rules:
+          - alert: DeploymentZeroPodsReady
+            expr: kube_deployment_spec_replicas{namespace="pop-prod"} > 0 and kube_deployment_status_replicas_available{namespace="pop-prod"} == 0
+            for: 5m
+            labels:
+              severity: critical
+            annotations:
+              summary: "Deployment {{ $labels.deployment }} in namespace {{ $labels.namespace }} has no ready pods"
+              description: "The deployment desires {{ $value }} replicas but has 0 ready. This may indicate a rollout failure, pod crashes, or resource issues."
+
+

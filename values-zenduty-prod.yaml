@@ -8,15 +8,27 @@ alertmanager:
       - name: 'zenduty'
         webhook_configs:
           - url: 'https://events.zenduty.com/integration/vp8fc/prometheus/80886b84-dc6d-416a-8e88-99217c46d282/'
+server:
+  persistentVolume:
+    size: 200Gi
 serverFiles:
   prometheus.yml:
     scrape_configs:
       - job_name: 'kube-state-metrics'
         static_configs:
           - targets: ['prometheus-kube-state-metrics.prometheus-pop-prod.svc.cluster.local:8080']
+      - job_name: 'JIVA-svc'
+        metrics_path: /metrics
+        static_configs:
+          - targets: ['jiva-svc.pop-prod.svc.cluster.local:80']
+      - job_name: 'Payments-svc'
+        metrics_path: /metrics
+        static_configs:
+          - targets: ['pop-payments-svc.pop-prod.svc.cluster.local:80']
       # - job_name: 'all_services'
       #   kubernetes_sd_configs:
       #     - role: service
+
     
   alerting_rules.yml:
     groups:
@@ -30,5 +42,13 @@ serverFiles:
             annotations:
               summary: "Deployment {{ $labels.deployment }} in namespace {{ $labels.namespace }} has no ready pods"
               description: "The deployment desires {{ $value }} replicas but has 0 ready. This may indicate a rollout failure, pod crashes, or resource issues."
+          - alert: TargetDown
+            expr: up == 0
+            for: 5m
+            labels:
+              severity: critical
+            annotations:
+              summary: "Target {{ $labels.job}} is down"
+              description: "Prometheus target {{ $labels.instance }} (job: {{ $labels.job }}) has been down for more than 5 minutes."
 
 

@@ -7,7 +7,10 @@ alertmanager:
     receivers:
       - name: 'zenduty'
         webhook_configs:
-          - url: 'https://events.zenduty.com/integration/vp8fc/prometheus/80886b84-dc6d-416a-8e88-99217c46d282/'
+          - url: ''
+server:
+  persistentVolume:
+    size: 30Gi
 serverFiles:
   prometheus.yml:
     scrape_configs:
@@ -26,7 +29,7 @@ serverFiles:
             expr: kube_deployment_spec_replicas{namespace="pop-stage"} > 0 and kube_deployment_status_replicas_available{namespace="pop-stage"} == 0
             for: 5m
             labels:
-              severity: critical
             annotations:
               summary: "Deployment {{ $labels.deployment }} in namespace {{ $labels.namespace }} has no ready pods"
               description: "The deployment desires {{ $value }} replicas but has 0 ready. This may indicate a rollout failure, pod crashes, or resource issues."
+#helm upgrade prometheus prometheus-community/prometheus -f values-zenduty-stage.yaml --namespace monitoring-aws-services

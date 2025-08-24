@@ -1,0 +1,47 @@
+apiVersion: v1
+kind: Service
+metadata:
+  annotations:
+    kubectl.kubernetes.io/last-applied-configuration: |
+      {"apiVersion":"v1","kind":"Service","metadata":{"annotations":{"service.beta.kubernetes.io/aws-load-balancer-backend-protocol":"http","service.beta.kubernetes.io/aws-load-balancer-scheme":"internet-facing","service.beta.kubernetes.io/aws-load-balancer-ssl-cert":"arn:aws:acm:ap-south-1:835518098452:certificate/9d91a08c-c056-4c4a-b76d-ce1ca2ecfade","service.beta.kubernetes.io/aws-load-balancer-ssl-ports":"443"},"name":"prometheus-lb","namespace":"prometheus-pop-prod"},"spec":{"ports":[{"name":"http","port":80,"targetPort":9090},{"name":"https","port":443,"targetPort":9090}],"selector":{"app.kubernetes.io/component":"server","app.kubernetes.io/instance":"prometheus","app.kubernetes.io/name":"prometheus"},"type":"LoadBalancer"}}
+    service.beta.kubernetes.io/aws-load-balancer-backend-protocol: http
+    #service.beta.kubernetes.io/aws-load-balancer-scheme: internet-facing
+    service.beta.kubernetes.io/aws-load-balancer-internal: "true"
+    service.beta.kubernetes.io/aws-load-balancer-ssl-cert: arn:aws:acm:ap-south-1:835518098452:certificate/e7bba1e7-a2fa-4c6c-84c0-499ae5211ebf
+    service.beta.kubernetes.io/aws-load-balancer-ssl-ports: "https"
+  finalizers:
+  - service.k8s.aws/resources
+  name: prometheus-lb
+  namespace: prometheus-pop-prod
+spec:
+  allocateLoadBalancerNodePorts: true
+  clusterIP: 10.100.221.58
+  clusterIPs:
+  - 10.100.221.58
+  externalTrafficPolicy: Cluster
+  internalTrafficPolicy: Cluster
+  ipFamilies:
+  - IPv4
+  ipFamilyPolicy: SingleStack
+  loadBalancerClass: service.k8s.aws/nlb
+  ports:
+  - name: http
+    nodePort: 30184
+    port: 80
+    protocol: TCP
+    targetPort: 9090
+  - name: https
+    nodePort: 30871
+    port: 443
+    protocol: TCP
+    targetPort: 9090
+  selector:
+    app.kubernetes.io/component: server
+    app.kubernetes.io/instance: prometheus
+    app.kubernetes.io/name: prometheus
+  sessionAffinity: None
+  type: LoadBalancer
+status:
+  loadBalancer:
+    ingress:
+    - hostname: k8s-promethe-promethe-466ac2e02c-22348c931c080b63.elb.ap-south-1.amazonaws.com

@@ -205,6 +205,10 @@ config: |-
     exportedTagsOnMetrics:
       AWS/RDS:
         - Name
+      AWS/EC2:
+        - Name
+      AWS/ELB:
+        - LoadBalancerName
     jobs:
     - type: AWS/RDS
       regions:
@@ -226,5 +230,23 @@ config: |-
           statistics: ["Average"]
           period: 300
           length: 600
+        - name: Latency
+          statistics: ["Average"]
+          period: 300
+          length: 600
+        - name: UnHealthyHostCount
+          statistics: ["Average"]
+          period: 300
+          length: 600
+        - name: RequestCount
+          statistics: ["Sum"]
+          period: 300
+          length: 600
+        - name: HTTPCode_ELB_5XX
+          statistics: ["Sum"]
+          period: 300
+          length: 600
+
+#helm upgrade yace prometheus-community/yet-another-cloudwatch-exporter -n prometheus-pop-prod -f yace-values.yaml
    
 

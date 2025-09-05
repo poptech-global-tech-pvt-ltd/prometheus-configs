@@ -205,10 +205,10 @@ config: |-
     exportedTagsOnMetrics:
       AWS/RDS:
         - Name
-      AWS/EC2:
-        - Name
       AWS/ELB:
         - LoadBalancerName
+      AWS/ApplicationELB:
+        - LoadBalancer
     jobs:
     - type: AWS/RDS
       regions:
@@ -230,6 +230,14 @@ config: |-
           statistics: ["Average"]
           period: 300
           length: 600
+    - type: AWS/ELB
+      regions:
+        - ap-south-1
+      metrics:
+        - name: "HealthyHostCount"
+          statistics: ["Average"]
+          period: 300
+          length: 600
         - name: Latency
           statistics: ["Average"]
           period: 300
@@ -243,6 +251,26 @@ config: |-
           period: 300
           length: 600
         - name: HTTPCode_ELB_5XX
+          statistics: ["Sum"]
+          period: 300
+          length: 600
+    - type: AWS/ApplicationELB
+      regions:
+        - ap-south-1
+      metrics:
+        - name: TargetResponseTime
+          statistics: ["Average"]
+          period: 300
+          length: 600
+        - name: HTTPCode_ELB_5XX_Count
+          statistics: ["Sum"]
+          period: 300
+          length: 600
+        - name: UnHealthyHostCount
+          statistics: ["Average"]
+          period: 300
+          length: 600
+        - name: RequestCount
           statistics: ["Sum"]
           period: 300
           length: 600

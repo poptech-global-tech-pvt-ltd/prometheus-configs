@@ -3,6 +3,10 @@ alertmanager:
     global:
       resolve_timeout: 15m
     route:
+      group_by: ['...']
+      group_wait: 1s
+      group_interval: 30s
+      repeat_interval: 1m
       receiver: 'zenduty'
     receivers:
       - name: 'zenduty'
@@ -56,25 +60,33 @@ serverFiles:
                       'seller-report-engine.pop-prod.svc:80',
                       'kubesense-metrics-store.kubesense.svc:8428',
                       'kubesense-metrics-scraper.kubesense.svc:30060',
-                      'prometheus-kube-state-metrics.prometheus-pop-prod.svc:8080'
+                      'prometheus-kube-state-metrics.prometheus-pop-prod.svc:8080',
+                      'popupigo-sit.popclub.co.in',
+                      'userprofile-sit.popclub.co.in',
+                      'cardlegacy-sit.popclub.co.in',
+                      'nidhi-sit.popclub.co.in',
+                      'hashira-sit.popclub.co.in',
+                      'eventcomms.popclub.co.in',
+                      'sherlock-sit.popclub.co.in'
+
                       ]
   alerting_rules.yml:
     groups:
       - name: UnhealthyK8sInfra
         rules:
-          - alert: DeploymentZeroPodsReady
-            expr: kube_deployment_spec_replicas{namespace="pop-prod"} > 0 and kube_deployment_status_replicas_available{namespace="pop-prod"} == 0
+          - alert: Deployment0PodsReady
+            expr: kube_deployment_spec_replicas{namespace="pop-prod", deployment!="popbe-preprod"} > 0 and kube_deployment_status_replicas_available{namespace="pop-prod", deployment!="popbe-preprod"} == 0
             for: 5m
             labels:
               severity: critical
             annotations:
-              summary: "Deployment {{ $labels.deployment }} in namespace {{ $labels.namespace }} has no ready pods"
+              summary: "Service Is Unhealthy!"
               description: "The deployment desires {{ $value }} replicas but has 0 ready. This may indicate a rollout failure, pod crashes, or resource issues."
       - name: UnhealthyServices
         rules:
           - alert: ServiceUnhealthy
             expr: up == 0
-            for: 5m
+            for: 1m
             labels:
               severity: critical
             annotations:
@@ -117,7 +129,7 @@ serverFiles:
               summary: "High DB connections on {{ $labels.dbinstance_identifier }}"
               description: "Connections at {{ $value }} (80% of max) for RDS {{ $labels.dbinstance_identifier }}."
           - alert: HighWriteLatency
-            expr: aws_rds_write_latency_average > 0.05
+            expr: aws_rds_write_latency_average > 0.1
             for: 1m 
             labels:
               severity: critical

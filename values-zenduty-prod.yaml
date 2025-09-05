@@ -10,10 +10,29 @@ alertmanager:
           - url: 'https://events.zenduty.com/integration/vp8fc/prometheus/80886b84-dc6d-416a-8e88-99217c46d282/'
 server:
   persistentVolume:
-    size: 200Gi
+    size: 250Gi
 serverFiles:
   prometheus.yml:
     scrape_configs:
+      - job_name: 'yace'
+        metrics_path: /metrics
+        static_configs:
+          - targets: ['yace-yet-another-cloudwatch-exporter:80']
+      - job_name: 'blackbox'
+        metrics_path: /probe
+        params:
+          module: [http_exact_200]
+        static_configs:
+          - targets:
+              - http://jiva.popclub.co.in/api/ext/v1/coins/txn
+        relabel_configs:
+          - source_labels: [__address__]
+            target_label: __param_target
+          - source_labels: [__param_target]
+            target_label: instance
+          - target_label: __address__
+            replacement: black-prometheus-blackbox-exporter:9115  # Your blackbox exporter address
+        scrape_interval: 30s
       - job_name: 'kube-state-metrics'
         static_configs:
           - targets: ['prometheus-kube-state-metrics.prometheus-pop-prod.svc.cluster.local:8080']
@@ -41,7 +60,7 @@ serverFiles:
                       ]
   alerting_rules.yml:
     groups:
-      - name: Prometheus Alerts
+      - name: UnhealthyK8sInfra
         rules:
           - alert: DeploymentZeroPodsReady
             expr: kube_deployment_spec_replicas{namespace="pop-prod"} > 0 and kube_deployment_status_replicas_available{namespace="pop-prod"} == 0
@@ -51,6 +70,8 @@ serverFiles:
             annotations:
               summary: "Deployment {{ $labels.deployment }} in namespace {{ $labels.namespace }} has no ready pods"
               description: "The deployment desires {{ $value }} replicas but has 0 ready. This may indicate a rollout failure, pod crashes, or resource issues."
+      - name: UnhealthyServices
+        rules:
           - alert: ServiceUnhealthy
             expr: up == 0
             for: 5m
@@ -59,5 +80,50 @@ serverFiles:
             annotations:
               summary: "Service {{ $labels.instance}} is unhealthy"
               description: "Service {{ $labels.instance }} has been unhealthy for more than 5 minutes."
+          - alert: JivaAPIStatusNot200
+            expr: probe_http_status_code{instance="https://jiva-sit.popclub.co.in/api/ext/v1/coins/txn"} != 200
+            for: 1m
+            labels:
+              severity: critical
+              service: jiva-api
+              endpoint: coins-txn
+            annotations:
+              summary: "Jiva API coins/txn endpoint returned non-200 status"
+              description: "The Jiva API endpoint https://jiva-sit.popclub.co.in/api/ext/v1/coins/txn returned status code {{ $value }} instead of 200. This may indicate an API issue."
+      - name: CloudWatch Alerts
+        rules:
+          - alert: RDSLowStorage
+            expr: aws_rds_free_storage_space_average < 30e9
+            for: 1m
+            labels:
+              severity: critical
+            annotations:
+              summary: "RDS storage low for {{ $labels.dbinstance_identifier }}"
+              description: "Free storage space < 30GB for 1m."
+          - alert: RDSHighCPU
+            expr: aws_rds_cpuutilization_average > 90
+            for: 2m
+            labels:
+              severity: critical
+            annotations:
+              summary: "High CPU on RDS {{ $labels.dbinstance_identifier }}"
+              description: "CPU utilization is above 90% for 2 minutes on {{ $labels.dbinstance_identifier }}."
+          - alert: RDSHighConnections
+            expr: aws_rds_database_connections_average > 3000
+            for: 1m 
+            labels:
+              severity: critical
+            annotations:
+              summary: "High DB connections on {{ $labels.dbinstance_identifier }}"
+              description: "Connections at {{ $value }} (80% of max) for RDS {{ $labels.dbinstance_identifier }}."
+          - alert: HighWriteLatency
+            expr: aws_rds_write_latency_average > 0.05
+            for: 1m 
+            labels:
+              severity: critical
+            annotations:
+              summary: "High Write Latency {{ $labels.dbinstance_identifier }}"
+              description: "High Write Latency for RDS {{ $labels.dbinstance_identifier }}."
 
 
+#helm upgrade prometheus prometheus-community/prometheus -f values-zenduty-prod.yaml --namespace prometheus-pop-prod

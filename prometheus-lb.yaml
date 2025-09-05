@@ -2,13 +2,11 @@ apiVersion: v1
 kind: Service
 metadata:
   annotations:
-    kubectl.kubernetes.io/last-applied-configuration: |
-      {"apiVersion":"v1","kind":"Service","metadata":{"annotations":{"service.beta.kubernetes.io/aws-load-balancer-backend-protocol":"http","service.beta.kubernetes.io/aws-load-balancer-scheme":"internet-facing","service.beta.kubernetes.io/aws-load-balancer-ssl-cert":"arn:aws:acm:ap-south-1:835518098452:certificate/9d91a08c-c056-4c4a-b76d-ce1ca2ecfade","service.beta.kubernetes.io/aws-load-balancer-ssl-ports":"443"},"name":"prometheus-lb","namespace":"prometheus-pop-prod"},"spec":{"ports":[{"name":"http","port":80,"targetPort":9090},{"name":"https","port":443,"targetPort":9090}],"selector":{"app.kubernetes.io/component":"server","app.kubernetes.io/instance":"prometheus","app.kubernetes.io/name":"prometheus"},"type":"LoadBalancer"}}
     service.beta.kubernetes.io/aws-load-balancer-backend-protocol: http
-    #service.beta.kubernetes.io/aws-load-balancer-scheme: internet-facing
-    service.beta.kubernetes.io/aws-load-balancer-internal: "true"
     service.beta.kubernetes.io/aws-load-balancer-ssl-cert: arn:aws:acm:ap-south-1:835518098452:certificate/e7bba1e7-a2fa-4c6c-84c0-499ae5211ebf
     service.beta.kubernetes.io/aws-load-balancer-ssl-ports: "https"
+    service.beta.kubernetes.io/aws-load-balancer-scheme: internet-facing
+    
   finalizers:
   - service.k8s.aws/resources
   name: prometheus-lb

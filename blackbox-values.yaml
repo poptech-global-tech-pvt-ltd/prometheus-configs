@@ -1,0 +1,10 @@
+config:
+  modules:
+    http_exact_200:
+      prober: http
+      timeout: 30s  # Adjust as needed
+      http:
+        valid_status_codes: [200]  # Only 200 is successful; others fail the probe
+        method: GET
+
+#helm install black prometheus-community/prometheus-blackbox-exporter --values blackbox-values.yaml

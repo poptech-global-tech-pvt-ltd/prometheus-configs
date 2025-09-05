@@ -1,0 +1,80 @@
+alertmanager:
+  config:
+    global:
+      resolve_timeout: 15m
+    route:
+      receiver: 'zenduty'
+    receivers:
+      - name: 'zenduty'
+        webhook_configs:
+          - url: 'https://events.zenduty.com/integration/vp8fc/prometheus/80886b84-dc6d-416a-8e88-99217c46d282/'
+server:
+  persistentVolume:
+    size: 250Gi
+serverFiles:
+  prometheus.yml:
+    scrape_configs:
+      # - job_name: 'blackbox'
+      #   scrape_interval: 30s
+      #   metrics_path: /probe
+      #   params:
+      #     module: [http_2xx]
+      #   static_configs:
+      #     - targets:
+      #         - https://jiva-sit.popclub.co.in/api/ext/v1/coins/txn
+      #   relabel_configs:
+      #     - source_labels: [__address__]
+      #       target_label: __param_target
+      #     - source_labels: [__param_target]
+      #       target_label: instance
+      #     - target_label: __address__
+      #       replacement: localhost:9115  # Your blackbox exporter address
+      #   scrape_interval: 30s
+      - job_name: 'kube-state-metrics'
+        static_configs:
+          - targets: ['prometheus-kube-state-metrics.prometheus-pop-prod.svc.cluster.local:8080']
+      # - job_name: 'AllClusterServices'
+      #   kubernetes_sd_configs:
+      #     - role: service
+      - job_name: 'ClusterServices'
+        metrics_path: /metrics
+        static_configs:
+          - targets: ['jiva-svc.pop-prod.svc.cluster.local:80', 
+                      'seller-report-engine.pop-prod.svc.cluster.local:80',
+                      'pop-payments-svc.pop-prod.svc.cluster.local:80',
+                      'prometheus-server.prometheus-pop-prod.svc.cluster.local:80',
+                      'opentelemetry-operator.kubesense.svc.cluster.local:8080',
+                      'presentation-layer.pop-prod.svc:80',
+                      'prometheus-lb.prometheus-pop-prod.svc:80',
+                      'kubesense-kube-state-metrics.kubesense.svc:8080',
+                      'kubesense-datastore.kubesense.svc:8001',
+                      'grafana.prometheus-pop-prod.svc:80',
+                      'cloudwatch-exporter.prometheus-pop-prod.svc:9106',
+                      'seller-report-engine.pop-prod.svc:80',
+                      'kubesense-metrics-store.kubesense.svc:8428',
+                      'kubesense-metrics-scraper.kubesense.svc:30060',
+                      'prometheus-kube-state-metrics.prometheus-pop-prod.svc:8080'
+                      ]
+  alerting_rules.yml:
+    groups:
+      - name: Prometheus Alerts
+        rules:
+          - alert: DeploymentZeroPodsReady
+            expr: kube_deployment_spec_replicas{namespace="pop-prod"} > 0 and kube_deployment_status_replicas_available{namespace="pop-prod"} == 0
+            for: 5m
+            labels:
+              severity: critical
+            annotations:
+              summary: "Deployment {{ $labels.deployment }} in namespace {{ $labels.namespace }} has no ready pods"
+              description: "The deployment desires {{ $value }} replicas but has 0 ready. This may indicate a rollout failure, pod crashes, or resource issues."
+          - alert: ServiceUnhealthy
+            expr: up == 0
+            for: 5m
+            labels:
+              severity: critical
+            annotations:
+              summary: "Service {{ $labels.instance}} is unhealthy"
+              description: "Service {{ $labels.instance }} has been unhealthy for more than 5 minutes."
+#helm upgrade prometheus prometheus-community/prometheus -f values-zenduty-prod.yaml --namespace prometheus-pop-prod
+
+

@@ -1,0 +1,42 @@
+apiVersion: v1
+kind: Service
+metadata:
+  annotations:
+    meta.helm.sh/release-name: grafana
+    meta.helm.sh/release-namespace: prometheus-pop-prod
+  finalizers:
+  - service.k8s.aws/resources
+  labels:
+    app.kubernetes.io/instance: grafana
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/name: grafana
+    app.kubernetes.io/version: 12.1.0
+    helm.sh/chart: grafana-9.3.2
+  name: grafana
+  namespace: prometheus-pop-prod
+spec:
+  allocateLoadBalancerNodePorts: true
+  clusterIP: 10.100.243.169
+  clusterIPs:
+  - 10.100.243.169
+  externalTrafficPolicy: Cluster
+  internalTrafficPolicy: Cluster
+  ipFamilies:
+  - IPv4
+  ipFamilyPolicy: SingleStack
+  loadBalancerClass: service.k8s.aws/nlb
+  ports:
+  - name: service
+    nodePort: 30519
+    port: 80
+    protocol: TCP
+    targetPort: 3000
+  selector:
+    app.kubernetes.io/instance: grafana
+    app.kubernetes.io/name: grafana
+  sessionAffinity: None
+  type: LoadBalancer
+status:
+  loadBalancer:
+    ingress:
+    - hostname: k8s-promethe-grafana-4447cb5cf8-b69afa294d70ce14.elb.ap-south-1.amazonaws.com

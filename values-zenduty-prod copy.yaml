@@ -4,10 +4,17 @@ alertmanager:
       resolve_timeout: 15m
     route:
       receiver: 'zenduty'
+      routes:
+        - match:
+            team: "devops"
+          receiver: 'zenduty-team-devops'
     receivers:
       - name: 'zenduty'
         webhook_configs:
           - url: 'https://events.zenduty.com/integration/vp8fc/prometheus/80886b84-dc6d-416a-8e88-99217c46d282/'
+      - name: 'zenduty-team-devops'
+        webhook_configs:
+          - url: 'https://events.zenduty.com/integration/vp8fc/prometheus/187034b2-e981-4e04-b0cc-b0d0068818ff/'
 server:
   persistentVolume:
     size: 250Gi

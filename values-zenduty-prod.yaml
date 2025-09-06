@@ -8,10 +8,79 @@ alertmanager:
       group_interval: 30s
       repeat_interval: 1m
       receiver: 'zenduty'
+      routes:
+        - match:
+            team: "devops"
+          receiver: 'zenduty-team-devops'
+        - match:
+            team: "cx"
+          receiver: 'cx'
+        - match:
+            team: "cx"
+          receiver: 'cx'
+        - match:
+            team: "jiva"
+          receiver: 'jiva'
+        - match:
+            team: "jiva"
+          receiver: 'loyaltyscan'
+        - match:
+            team: "popcoins"
+          receiver: 'popcoins'
+        - match:
+            team: "publicappremix"
+          receiver: 'publicappremix'
+        - match:
+            team: "rcbp"
+          receiver: 'rcbp'
+        - match:
+            team: "shop"
+          receiver: 'shop'
+        - match:
+            team: "search"
+          receiver: 'search'
+        - match:
+            team: "upi"
+          receiver: 'upi' 
     receivers:
       - name: 'zenduty'
         webhook_configs:
           - url: 'https://events.zenduty.com/integration/vp8fc/prometheus/80886b84-dc6d-416a-8e88-99217c46d282/'
+      - name: 'zenduty-team-devops'
+        webhook_configs:
+          - url: 'https://events.zenduty.com/integration/vp8fc/prometheus/187034b2-e981-4e04-b0cc-b0d0068818ff/'
+      - name: 'cx'
+        webhook_configs:
+          - url: 'https://events.zenduty.com/integration/vp8fc/prometheus/958f3010-85de-4056-975d-b6ba402b1c37/'
+      - name: 'jiva'
+        webhook_configs:
+          - url: 'https://events.zenduty.com/integration/vp8fc/prometheus/0b3bea36-a61d-4a72-9fc9-7d5f6c5dbde7/'
+      - name: 'loyaltyscan'
+        webhook_configs:
+          - url: 'https://events.zenduty.com/integration/vp8fc/prometheus/bbd22876-b882-494e-80a9-b6ba58d7c079/'
+      - name: 'popcoins'
+        webhook_configs:
+          - url: 'https://events.zenduty.com/integration/vp8fc/prometheus/20d9c9ee-a281-4bf8-91a5-40530a002764/'
+      - name: 'publicappremix'
+        webhook_configs:
+          - url: 'https://events.zenduty.com/integration/vp8fc/prometheus/13f462a5-c35f-4dab-a7ef-a4c6e4590619/'
+      - name: 'rcbp'
+        webhook_configs:
+          - url: 'https://events.zenduty.com/integration/vp8fc/prometheus/20860cce-abac-433c-88b5-24540ade4c86/'
+      - name: 'shop'
+        webhook_configs:
+          - url: 'https://events.zenduty.com/integration/vp8fc/prometheus/4f15377b-9d59-456c-b5a4-8ae5281e5ba5/'
+      - name: 'search'
+        webhook_configs:
+          - url: 'https://events.zenduty.com/integration/vp8fc/prometheus/67ef993e-3bf0-40e7-94c0-def660628a03/'
+      - name: 'upi'
+        webhook_configs:
+          - url: 'https://events.zenduty.com/integration/vp8fc/prometheus/e6ce6457-a049-42cc-a992-fcfd5a9728d5/'
+      - name: 'upi'
+        webhook_configs:
+          - url: 'https://events.zenduty.com/integration/vp8fc/prometheus/e6ce6457-a049-42cc-a992-fcfd5a9728d5/'
+      
+      
 server:
   persistentVolume:
     size: 250Gi
@@ -67,8 +136,9 @@ serverFiles:
                       'nidhi-sit.popclub.co.in',
                       'hashira-sit.popclub.co.in',
                       'eventcomms.popclub.co.in',
-                      'sherlock-sit.popclub.co.in'
-
+                      'sherlock-sit.popclub.co.in',
+                      'api.getpopcard.co',
+                      'cassa-sit.popclub.co.in'
                       ]
   alerting_rules.yml:
     groups:
